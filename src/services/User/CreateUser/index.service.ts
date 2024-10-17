@@ -1,31 +1,59 @@
 import crypto from 'crypto-js'
 import { v4 as uuidv4 } from 'uuid'
 
+import { connection } from '../../../database/connection'
+import AppError from '../../../errors/appError'
+import { User } from '../../../models/User'
 import { RequestData } from './types'
 
 class CreateUserService {
+  private static readonly dateNow = new Date()
+
   public static async create(requestData: RequestData) {
     const service = new CreateUserService()
-
     return await service.execute(requestData)
   }
 
   private async execute(requestData: RequestData) {
-    const dateNow = new Date()
+    const encryptedPassword = this.encryptPassword(requestData.password)
 
-    const userData: User = {
+    const userData = {
       ...requestData,
       userId: uuidv4(),
-      password: this.encryptPassword(requestData.password),
-      createdAt: dateNow.toISOString(),
-      updatedAt: dateNow.toISOString()
+      createdAt: CreateUserService.dateNow.toISOString(),
+      updatedAt: CreateUserService.dateNow.toISOString()
     }
 
-    // TODO: Save in sqlite
+    await this.saveDataInDatabase({ ...userData, password: encryptedPassword })
 
-    delete userData.password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
+    const { password, ...userWithoutPassword } = userData
 
-    return userData
+    return userWithoutPassword
+  }
+
+  private async saveDataInDatabase(userData: User) {
+    try {
+      const databaseClient = await connection()
+
+      await databaseClient.run(
+        `INSERT INTO users (userId, name, email, password, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          userData.userId,
+          userData.name,
+          userData.email,
+          userData.password,
+          userData.createdAt,
+          userData.updatedAt
+        ]
+      )
+
+      await databaseClient.close()
+    } catch (error) {
+      console.error({ saveDataInDatabaseError: error })
+
+      throw new AppError('Error when creating user in database', 500)
+    }
   }
 
   private encryptPassword(password: string) {
