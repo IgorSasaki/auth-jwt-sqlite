@@ -8,11 +8,15 @@
     "dev": "nodemon src/index.ts",
     "commit": "git-cz",
     "format": "prettier . --write --ignore-path ./tsconfig.json",
+    "init-db": "ts-node src/database/tables/initDatabase.ts",
     "prepare": "husky install"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "express-async-errors": "^3.1.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
