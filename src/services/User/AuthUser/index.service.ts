@@ -18,7 +18,7 @@ class AuthUserService {
     const userData = await this.findUserByEmail(requestData.email)
 
     if (!userData) {
-      throw new AppError('User not found', 404)
+      throw new AppError('User not found', 400)
     }
 
     const encryptedPassword = this.encryptPassword(requestData.password)
@@ -27,8 +27,8 @@ class AuthUserService {
       throw new AppError('Invalid password', 401)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-    const { password: userPassword, userId, ...userWithoutPassword } = userData
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = userData
 
     const { secret, expiresIn } = authConfig.jwt
 
@@ -37,7 +37,7 @@ class AuthUserService {
       expiresIn
     })
 
-    return { userData: userWithoutPassword, token }
+    return { user: userWithoutPassword, token }
   }
 
   private async findUserByEmail(email: string) {

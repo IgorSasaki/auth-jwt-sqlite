@@ -11,6 +11,7 @@ class CreateUserService {
 
   public static async create(requestData: RequestData) {
     const service = new CreateUserService()
+
     return await service.execute(requestData)
   }
 
@@ -32,8 +33,8 @@ class CreateUserService {
 
     await this.saveDataInDatabase({ ...userData, password: encryptedPassword })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-    const { password, ...userWithoutPassword } = userData
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, userId: __, ...userWithoutPassword } = userData
 
     return userWithoutPassword
   }
