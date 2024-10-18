@@ -1,10 +1,9 @@
-import crypto from 'crypto-js'
 import { sign } from 'jsonwebtoken'
 
 import authConfig from '../../../config/auth'
-import { connection } from '../../../database/connection'
 import AppError from '../../../errors/appError'
-import { User } from '../../../models/User'
+import { encryptPassword } from '../../../utils/User/encryptPassword'
+import { findUserByEmail } from '../../../utils/User/findUserByEmail'
 import { RequestData } from './types'
 
 class AuthUserService {
@@ -15,13 +14,13 @@ class AuthUserService {
   }
 
   private async execute(requestData: RequestData) {
-    const userData = await this.findUserByEmail(requestData.email)
+    const userData = await findUserByEmail(requestData.email)
 
     if (!userData) {
       throw new AppError('User not found', 400)
     }
 
-    const encryptedPassword = this.encryptPassword(requestData.password)
+    const encryptedPassword = encryptPassword(requestData.password)
 
     if (userData.password !== encryptedPassword) {
       throw new AppError('Invalid password', 401)
@@ -38,27 +37,6 @@ class AuthUserService {
     })
 
     return { user: userWithoutPassword, token }
-  }
-
-  private async findUserByEmail(email: string) {
-    try {
-      const databaseClient = await connection()
-
-      const user = await databaseClient.get<User>(
-        `SELECT * FROM users WHERE email = ?`,
-        [email]
-      )
-      await databaseClient.close()
-
-      return user
-    } catch (error) {
-      console.error({ findUserByEmailError: error })
-      throw new AppError('Error when searching for user in database', 500)
-    }
-  }
-
-  private encryptPassword(password: string) {
-    return crypto.SHA256(password).toString(crypto.enc.Hex)
   }
 }
 

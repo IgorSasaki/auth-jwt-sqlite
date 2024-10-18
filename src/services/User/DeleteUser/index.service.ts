@@ -1,5 +1,6 @@
 import { connection } from '../../../database/connection'
 import AppError from '../../../errors/appError'
+import { findUserById } from '../../../utils/User/findUserById'
 import { RequestData } from './types'
 
 class DeleteUserService {
@@ -10,7 +11,7 @@ class DeleteUserService {
   }
 
   private async execute(requestData: RequestData) {
-    const user = await this.findUserById(requestData.userId)
+    const user = await findUserById(requestData.userId)
 
     if (!user) {
       throw new AppError('User not found', 400)
@@ -23,24 +24,6 @@ class DeleteUserService {
     }
 
     return { message: 'User deleted successfully' }
-  }
-
-  private async findUserById(userId: string) {
-    try {
-      const databaseClient = await connection()
-
-      const user = await databaseClient.get(
-        `SELECT * FROM users WHERE userId = ?`,
-        [userId]
-      )
-
-      await databaseClient.close()
-
-      return user
-    } catch (error) {
-      console.error({ findUserByIdError: error })
-      throw new AppError('Error when searching for user in database', 500)
-    }
   }
 
   private async deleteUserFromDatabase(userId: string) {

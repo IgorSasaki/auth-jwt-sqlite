@@ -1,9 +1,10 @@
-import crypto from 'crypto-js'
 import { v4 as uuidv4 } from 'uuid'
 
 import { connection } from '../../../database/connection'
 import AppError from '../../../errors/appError'
 import { User } from '../../../models/User'
+import { encryptPassword } from '../../../utils/User/encryptPassword'
+import { findUserByEmail } from '../../../utils/User/findUserByEmail'
 import { RequestData } from './types'
 
 class CreateUserService {
@@ -16,13 +17,13 @@ class CreateUserService {
   }
 
   private async execute(requestData: RequestData) {
-    const existingUser = await this.findUserByEmail(requestData.email)
+    const existingUser = await findUserByEmail(requestData.email)
 
     if (existingUser) {
       throw new AppError('User already exists with this email', 400)
     }
 
-    const encryptedPassword = this.encryptPassword(requestData.password)
+    const encryptedPassword = encryptPassword(requestData.password)
 
     const userData = {
       ...requestData,
@@ -37,25 +38,6 @@ class CreateUserService {
     const { password: _, userId: __, ...userWithoutPassword } = userData
 
     return userWithoutPassword
-  }
-
-  private async findUserByEmail(email: string) {
-    try {
-      const databaseClient = await connection()
-
-      const user = await databaseClient.get<User>(
-        `SELECT * FROM users WHERE email = ?`,
-        [email]
-      )
-
-      await databaseClient.close()
-
-      return user || null
-    } catch (error) {
-      console.error({ findUserByEmailError: error })
-
-      throw new AppError('Error when searching for user in database', 500)
-    }
   }
 
   private async saveDataInDatabase(userData: User) {
@@ -80,10 +62,6 @@ class CreateUserService {
 
       throw new AppError('Error when creating user in database', 500)
     }
-  }
-
-  private encryptPassword(password: string) {
-    return crypto.SHA256(password).toString(crypto.enc.Hex)
   }
 }
 

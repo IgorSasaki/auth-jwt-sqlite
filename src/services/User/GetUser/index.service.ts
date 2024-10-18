@@ -1,6 +1,5 @@
-import { connection } from '../../../database/connection'
 import AppError from '../../../errors/appError'
-import { User } from '../../../models/User'
+import { findUserById } from '../../../utils/User/findUserById'
 import { RequestData } from './types'
 
 class GetUserService {
@@ -11,7 +10,7 @@ class GetUserService {
   }
 
   private async execute(requestData: RequestData) {
-    const user = await this.findUserById(requestData.userId)
+    const user = await findUserById(requestData.userId)
 
     if (!user) {
       throw new AppError('User not found', 400)
@@ -21,24 +20,6 @@ class GetUserService {
     const { password: _, userId: __, ...userWithoutPassword } = user
 
     return userWithoutPassword
-  }
-
-  private async findUserById(userId: string) {
-    try {
-      const databaseClient = await connection()
-
-      const user = await databaseClient.get<User>(
-        `SELECT * FROM users WHERE userId = ?`,
-        [userId]
-      )
-      await databaseClient.close()
-
-      return user
-    } catch (error) {
-      console.error({ findUserByIdError: error })
-
-      throw new AppError('Error when searching for user in database', 500)
-    }
   }
 }
 
