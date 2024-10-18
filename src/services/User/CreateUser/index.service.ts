@@ -15,6 +15,12 @@ class CreateUserService {
   }
 
   private async execute(requestData: RequestData) {
+    const existingUser = await this.findUserByEmail(requestData.email)
+
+    if (existingUser) {
+      throw new AppError('User already exists with this email', 400)
+    }
+
     const encryptedPassword = this.encryptPassword(requestData.password)
 
     const userData = {
@@ -30,6 +36,25 @@ class CreateUserService {
     const { password, ...userWithoutPassword } = userData
 
     return userWithoutPassword
+  }
+
+  private async findUserByEmail(email: string) {
+    try {
+      const databaseClient = await connection()
+
+      const user = await databaseClient.get<User>(
+        `SELECT * FROM users WHERE email = ?`,
+        [email]
+      )
+
+      await databaseClient.close()
+
+      return user || null
+    } catch (error) {
+      console.error({ findUserByEmailError: error })
+
+      throw new AppError('Error when searching for user in database', 500)
+    }
   }
 
   private async saveDataInDatabase(userData: User) {
