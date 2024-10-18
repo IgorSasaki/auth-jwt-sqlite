@@ -3,6 +3,7 @@ import { Router } from 'express'
 import ensureAuthenticated from '../middlewares/ensureAuthenticated'
 import AuthUserService from '../services/User/AuthUser/index.service'
 import CreateUserService from '../services/User/CreateUser/index.service'
+import DeleteUserService from '../services/User/DeleteUser/index.service'
 import EditUserService from '../services/User/EditUser/index.service'
 import GetUserService from '../services/User/GetUser/index.service'
 
@@ -35,6 +36,16 @@ UserRouter.get('/', ensureAuthenticated, async (request, response) => {
   const userId = request.user.userId
 
   const responseData = await GetUserService.create({
+    userId
+  })
+
+  return response.json(responseData)
+})
+
+UserRouter.delete('/', ensureAuthenticated, async (request, response) => {
+  const userId = request.user.userId
+
+  const responseData = await DeleteUserService.create({
     userId
   })
 

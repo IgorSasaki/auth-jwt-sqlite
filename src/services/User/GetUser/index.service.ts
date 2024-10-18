@@ -18,7 +18,7 @@ class GetUserService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = user
+    const { password: _, userId: __, ...userWithoutPassword } = user
 
     return userWithoutPassword
   }
