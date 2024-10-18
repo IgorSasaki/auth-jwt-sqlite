@@ -47,8 +47,8 @@ Certifique-se de que você tem o **Node.js** (versão 14 ou superior) e o **npm*
 1. Clone este repositório:
 
    ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
-   cd seu-repositorio
+   git clone https://github.com/IgorSasaki/auth-jwt-sqlite
+   cd auth-jwt-sqlite
    ```
 
 2. Instale as dependências:
